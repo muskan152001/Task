@@ -1,3 +1,4 @@
+//signup.jsx
 import React, { useState } from "react";
 import { signup } from "../utils/auth";
 import { useNavigate } from "react-router-dom";

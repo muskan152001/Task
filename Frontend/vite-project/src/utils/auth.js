@@ -1,3 +1,4 @@
+//auth.js
 import axios from "axios";
 
 const API_URL = "http://localhost:5000/api/auth"; 
@@ -44,4 +45,15 @@ export const logout = () => {
   removeToken();
   localStorage.removeItem("role");
   window.location.href = "/login";
+};
+
+// In auth.js (frontend)
+export const checkTokenExpiration = () => {
+  const token = getToken();
+  if (token) {
+    const decoded = jwt.decode(token);
+    if (decoded.exp * 1000 < Date.now()) {
+      logout();
+    }
+  }
 };

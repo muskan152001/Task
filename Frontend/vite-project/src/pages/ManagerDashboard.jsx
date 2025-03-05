@@ -1,6 +1,6 @@
+//Managerdashboard.jsx
 const ManagerDashboard = () => {
-    return <h2>Welcome, Manager! You can oversee tasks here.</h2>;
-  };
-  
-  export default ManagerDashboard;
-  
+  return <h2>Welcome, manager! You can explore features here.</h2>;
+};
+
+export default ManagerDashboard;

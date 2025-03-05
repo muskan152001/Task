@@ -1,3 +1,4 @@
+//Adminpanel.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -7,52 +8,57 @@ const AdminPanel = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    async function fetchUsers() {
+    const controller = new AbortController();
+    const fetchUsers = async () => {
       try {
         const res = await axios.get("http://localhost:5000/api/users", {
           withCredentials: true,
+          signal: controller.signal, // Attach signal to cancel request if needed
         });
         setUsers(res.data);
-        setLoading(false);
-      } catch (error) {
-        setError("Failed to fetch users");
+      } catch (err) {
+        if (!axios.isCancel(err)) {
+          setError("❌ Failed to fetch users");
+        }
+      } finally {
         setLoading(false);
       }
-    }
+    };
+
     fetchUsers();
+    return () => controller.abort(); // Cleanup
   }, []);
 
-  // ✅ Function to Update User Role
   const updateUserRole = async (id, newRole) => {
     try {
-      await axios.put(`http://localhost:5000/api/users/${id}/role`, 
-        { role: newRole }, 
+      await axios.put(
+        `http://localhost:5000/api/users/${id}/role`,
+        { role: newRole },
         { withCredentials: true }
       );
       setUsers(users.map(user => user._id === id ? { ...user, role: newRole } : user));
-    } catch (error) {
-      console.error("Failed to update user role", error);
+    } catch (err) {
+      console.error("❌ Failed to update user role", err);
     }
   };
 
-  // ✅ Function to Delete User
   const deleteUser = async (id) => {
     try {
       await axios.delete(`http://localhost:5000/api/users/${id}`, { withCredentials: true });
       setUsers(users.filter(user => user._id !== id));
-    } catch (error) {
-      console.error("Failed to delete user", error);
+    } catch (err) {
+      console.error("❌ Failed to delete user", err);
     }
   };
 
   return (
-    <div>
+    <div className="admin-container">
       <h2>Admin Panel</h2>
-      
-      {loading ? <p>Loading users...</p> : null}
-      {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <table>
+      {loading && <p>🔄 Loading users...</p>}
+      {error && <p className="error">{error}</p>}
+
+      <table className="user-table">
         <thead>
           <tr>
             <th>Email</th>
@@ -65,8 +71,8 @@ const AdminPanel = () => {
             <tr key={user._id}>
               <td>{user.email}</td>
               <td>
-                <select 
-                  value={user.role} 
+                <select
+                  value={user.role}
                   onChange={(e) => updateUserRole(user._id, e.target.value)}
                 >
                   <option value="User">User</option>
@@ -75,7 +81,9 @@ const AdminPanel = () => {
                 </select>
               </td>
               <td>
-                <button onClick={() => deleteUser(user._id)}>Delete</button>
+                <button className="delete-btn" onClick={() => deleteUser(user._id)}>
+                  ❌ Delete
+                </button>
               </td>
             </tr>
           ))}
